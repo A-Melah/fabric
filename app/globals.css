@@ -1,41 +1,171 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  body {
-    @apply bg-wedding-ivory text-wedding-espresso font-body antialiased selection:bg-wedding-terracotta selection:text-white;
+@theme {
+  /* Palette: gold, olive green, lilac, white (camelCase to match JSX classes) */
+  --color-wedding-ivory: #fffdf8;
+  --color-wedding-ivoryDeep: #f8f0dc;
+  --color-wedding-mist: #f3edfc;
+  --color-wedding-lilac: #a98bdb;
+  --color-wedding-lilacDeep: #7a53b8;
+  --color-wedding-olive: #6b7f2a;
+  --color-wedding-oliveDeep: #3f5018;
+  --color-wedding-oliveDark: #222d0e;
+  --color-wedding-ink: #232a10;
+  --color-wedding-inkSoft: #4a5726;
+  --color-wedding-gold: #d4a937;
+  --color-wedding-goldPale: #f6e3a1;
+  --color-wedding-glassDarkBorder: rgba(255, 255, 255, 0.18);
+
+  --font-display: "Georgia", "Times New Roman", serif;
+  --font-body: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  --shadow-glass: 0 8px 32px rgba(74, 85, 39, 0.16);
+  --shadow-glassSoft: 0 4px 20px rgba(74, 85, 39, 0.09);
+  --shadow-glassDark: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* Metallic gold: use gold-text for gradient lettering, gold-fill for buttons/badges */
+@utility gold-text {
+  background-image: linear-gradient(135deg, #a67c1a 0%, #f0c75e 35%, #fff1b8 50%, #d4a937 70%, #a67c1a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility gold-fill {
+  background-image: linear-gradient(135deg, #a67c1a 0%, #f0c75e 35%, #fff1b8 50%, #d4a937 70%, #a67c1a 100%);
+}
+
+/* Thin metallic gold border. Needs a positioned element (add `relative` unless already positioned). */
+@utility gold-border {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #a67c1a 0%, #f0c75e 35%, #fff1b8 50%, #d4a937 70%, #a67c1a 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+}
+
+/* Decorative flower motion runs on CSS (compositor) instead of JS for smoothness */
+@keyframes bloom-sway {
+
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
   }
 
-  h1,
-  h2,
-  h3,
-  h4 {
-    @apply font-display;
+  50% {
+    transform: translate3d(0, -10px, 0) rotate(var(--r, 20deg));
   }
+}
+
+@keyframes bloom-fall {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: translate3d(0, 112vh, 0) rotate(var(--r, 200deg));
+    opacity: 0;
+  }
+}
+
+@keyframes bloom-spin {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(12deg);
+  }
+
+  75% {
+    transform: rotate(-12deg);
+  }
+}
+
+@keyframes bloom-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.6);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes ring-breathe {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+body {
+  @apply bg-wedding-ivory text-wedding-ink font-body antialiased selection:bg-wedding-lilac selection:text-white;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  @apply font-display;
 }
 
 html {
   scroll-behavior: smooth;
 }
 
-/* Thin, warm scrollbar — small detail, keeps the glass feel consistent (Webkit only) */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #fbf6ec;
+  background: #fdfaf4;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c79a56;
+  background: #a98bdb;
   border-radius: 999px;
-  border: 2px solid #fbf6ec;
+  border: 2px solid #fdfaf4;
 }
 
-/* Diagonal light sheen swept across glass surfaces on hover.
-   Add the `glass-sheen` class to any relatively-positioned glass card. */
 .glass-sheen {
   position: relative;
   overflow: hidden;
@@ -45,11 +175,7 @@ html {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg,
-      transparent 20%,
-      rgba(255, 255, 255, 0.55) 40%,
-      rgba(255, 255, 255, 0.08) 60%,
-      transparent 80%);
+  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.55) 40%, rgba(255, 255, 255, 0.08) 60%, transparent 80%);
   transform: translateX(-120%);
   transition: transform 0.9s ease;
   pointer-events: none;
@@ -59,7 +185,6 @@ html {
   transform: translateX(120%);
 }
 
-/* Respect people who've asked their OS for less motion */
 @media (prefers-reduced-motion: reduce) {
 
   *,
