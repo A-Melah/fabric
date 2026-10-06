@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-wedding-ivory text-wedding-espresso font-body antialiased selection:bg-wedding-terracotta selection:text-white;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Thin, warm scrollbar — small detail, keeps the glass feel consistent (Webkit only) */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fbf6ec;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c79a56;
+  border-radius: 999px;
+  border: 2px solid #fbf6ec;
+}
+
+/* Diagonal light sheen swept across glass surfaces on hover.
+   Add the `glass-sheen` class to any relatively-positioned glass card. */
+.glass-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-sheen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.55) 40%,
+      rgba(255, 255, 255, 0.08) 60%,
+      transparent 80%);
+  transform: translateX(-120%);
+  transition: transform 0.9s ease;
+  pointer-events: none;
+}
+
+.glass-sheen:hover::before {
+  transform: translateX(120%);
+}
+
+/* Respect people who've asked their OS for less motion */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

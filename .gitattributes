@@ -1,0 +1,35 @@
+# Set default behavior for all files to handle line endings automatically.
+* text=auto
+# Force text files to use LF (Unix line endings) in the repo.
+*.js          text eol=lf
+*.jsx         text eol=lf
+*.ts          text eol=lf
+*.tsx         text eol=lf
+*.json        text eol=lf
+*.css         text eol=lf
+*.scss        text eol=lf
+*.html        text eol=lf
+*.md          text eol=lf
+*.yml         text eol=lf
+*.yaml        text eol=lf
+.gitignore    text eol=lf
+.gitattributes text eol=lf
+# Batch files & PowerShell scripts MUST keep Windows CRLF line endings to run correctly.
+*.bat         text eol=crlf
+*.cmd         text eol=crlf
+*.ps1         text eol=crlf
+# Mark binary files explicitly so Git doesn't try to normalize or diff them.
+*.png         binary
+*.jpg         binary
+*.jpeg        binary
+*.gif         binary
+*.ico         binary
+*.webp        binary
+*.pdf         binary
+*.woff        binary
+*.woff2       binary
+*.ttf         binary
+*.eot         binary
+*.zip         binary
+*.tar.gz      binary
+*.node filter=lfs diff=lfs merge=lfs -text
