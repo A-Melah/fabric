@@ -1,26 +1,47 @@
 import { NextResponse } from "next/server";
 import { waitUntil } from "@vercel/functions";
-import { supabaseAdmin } from "@/lib/supabase";
 import { Resend } from "resend";
+import { supabaseAdmin } from "@/lib/supabase";
+import { phoneKey } from "@/lib/phone";
+import { RELATIONSHIPS } from "@/lib/rsvp-options";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const esc = (s) =>
+  String(s ?? "").replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+
+const fail = (message, status) =>
+  NextResponse.json({ success: false, message }, { status });
+
 export async function POST(request) {
   try {
-    const { guestId, phone, attendance, additionalGuests, message } =
-      await request.json();
+    const {
+      guestId,
+      phone,
+      attendance,
+      relationship,
+      relationshipOther,
+      additionalGuests,
+      message,
+    } = await request.json();
 
     if (!guestId || !phone) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Missing guest identifier or phone number.",
-        },
-        { status: 400 },
-      );
+      return fail("Missing guest identifier or phone number.", 400);
     }
+    if (!["Attending", "Declined"].includes(attendance)) {
+      return fail("Invalid attendance value.", 400);
+    }
+    const attending = attendance === "Attending";
 
-    const cleanInputPhone = String(phone).replace(/\D/g, "");
+    if (attending && !RELATIONSHIPS.some((r) => r.value === relationship)) {
+      return fail("Please select how you know the couple.", 400);
+    }
 
     const { data: guest, error: fetchError } = await supabaseAdmin
       .from("guests")
@@ -28,33 +49,14 @@ export async function POST(request) {
       .eq("id", guestId)
       .single();
 
-    if (fetchError || !guest) {
-      return NextResponse.json(
-        { success: false, message: "Guest record not found." },
-        { status: 404 },
-      );
-    }
+    if (fetchError || !guest) return fail("Guest record not found.", 404);
 
-    const cleanDbPhone = String(guest.phone || "").replace(/\D/g, "");
-    if (!cleanDbPhone || cleanDbPhone !== cleanInputPhone) {
-      return NextResponse.json(
-        { success: false, message: "Phone number mismatch." },
-        { status: 401 },
-      );
+    const key = phoneKey(phone);
+    if (!key || key !== guest.phone_key) {
+      return fail("Phone number mismatch.", 401);
     }
-
     if (guest.has_responded) {
-      return NextResponse.json(
-        { success: false, message: "This invitation has already responded." },
-        { status: 409 },
-      );
-    }
-
-    if (!["Attending", "Declined"].includes(attendance)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid attendance value." },
-        { status: 400 },
-      );
+      return fail("This invitation has already responded.", 409);
     }
 
     let finalAdditional = [];
@@ -62,18 +64,30 @@ export async function POST(request) {
       const maxAllowed = (guest.max_family_size || 1) - 1;
       finalAdditional = Array.isArray(additionalGuests)
         ? additionalGuests
-            .slice(0, maxAllowed)
-            .map((n) => String(n).trim())
+            .map((n) => String(n).trim().slice(0, 80))
             .filter(Boolean)
+            .slice(0, maxAllowed)
         : [];
     }
 
+    const cleanRelationship = attending ? relationship : null;
+    const cleanOther =
+      attending && relationship === "Other"
+        ? String(relationshipOther || "")
+            .trim()
+            .slice(0, 60) || null
+        : null;
+    const cleanMessage = message ? String(message).trim().slice(0, 1000) : null;
+
+    // The .eq("has_responded", false) guard stops double submissions.
     const { data: updated, error: updateError } = await supabaseAdmin
       .from("guests")
       .update({
         attendance,
+        relationship: cleanRelationship,
+        relationship_other: cleanOther,
         additional_guests: finalAdditional,
-        message: message ? String(message).trim() : null,
+        message: cleanMessage,
         has_responded: true,
         responded_at: new Date().toISOString(),
       })
@@ -83,72 +97,80 @@ export async function POST(request) {
       .maybeSingle();
 
     if (updateError || !updated) {
-      return NextResponse.json(
-        { success: false, message: "This invitation has already responded." },
-        { status: 409 },
-      );
+      return fail("This invitation has already responded.", 409);
     }
 
-    // The RSVP is safely committed at this point — everything below is
-    // "nice to have, not required for the guest's response to count."
-    const additionalGuestsString =
-      finalAdditional.length > 0 ? finalAdditional.join(", ") : "None";
+    // RSVP is saved. Everything below is best-effort.
+    const relationshipLabel = !attending
+      ? "N/A"
+      : cleanOther
+        ? `Other (${cleanOther})`
+        : RELATIONSHIPS.find((r) => r.value === relationship).label;
+    const totalAttending =
+      attendance === "Attending" ? 1 + finalAdditional.length : 0;
+    const additionalStr = finalAdditional.length
+      ? finalAdditional.join(", ")
+      : "None";
 
-    // waitUntil schedules this work to run AFTER the response below is
-    // sent, but keeps the function alive until it finishes — unlike a
-    // bare unawaited Promise, this is guaranteed to actually run.
     waitUntil(
       Promise.all([
         resend.emails
           .send({
-            from: "Wedding RSVP <onboarding@resend.dev>",
-            to: process.env.RECIPIENT_EMAIL || "your-email@example.com",
-            subject: `RSVP Update: ${guest.name} (${attendance})`,
+            from:
+              process.env.RESEND_FROM_EMAIL ||
+              "Wedding RSVP <onboarding@resend.dev>",
+            to: process.env.RECIPIENT_EMAIL,
+            subject: `RSVP: ${guest.name} (${attendance})`,
             html: `
               <h2>New RSVP Submission</h2>
-              <p><strong>Guest Name:</strong> ${guest.name}</p>
-              <p><strong>Attendance:</strong> ${attendance}</p>
-              <p><strong>Additional Guests:</strong> ${additionalGuestsString}</p>
-              <p><strong>Wishes:</strong> ${message || "None provided"}</p>
+              <p><strong>Guest:</strong> ${esc(guest.name)}</p>
+              <p><strong>Attendance:</strong> ${esc(attendance)} (${totalAttending} total)</p>
+              <p><strong>Relationship:</strong> ${esc(relationshipLabel)}</p>
+              <p><strong>Additional guests:</strong> ${esc(additionalStr)}</p>
+              <p><strong>Wishes:</strong> ${esc(cleanMessage || "None provided")}</p>
             `,
           })
           .then((res) => {
-            if (res?.error)
-              console.error("Resend returned an error:", res.error);
+            if (res?.error) console.error("Resend error:", res.error);
           })
-          .catch((emailErr) => console.error("Resend email error:", emailErr)),
+          .catch((e) => console.error("Resend email error:", e)),
 
         process.env.GOOGLE_SHEET_URL
           ? fetch(process.env.GOOGLE_SHEET_URL, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                name: guest.name,
-                phone: cleanInputPhone,
-                attendance,
-                additionalGuests: finalAdditional,
-                message: message || "None",
+                secret: process.env.GOOGLE_SHEET_SECRET,
+                guestId: guest.id,
                 timestamp: new Date().toISOString(),
+                name: guest.name,
+                phone: guest.phone,
+                attendance,
+                relationship: relationshipLabel,
+                totalAttending,
+                additionalGuests: additionalStr,
+                message: cleanMessage || "",
               }),
             })
-              .then((res) => {
-                if (!res.ok) console.error("Sheets sync failed:", res.status);
+              .then((r) => r.json())
+              .then(async (r) => {
+                if (!r?.ok) {
+                  console.error("Sheets sync failed:", r?.error);
+                  return;
+                }
+                await supabaseAdmin
+                  .from("guests")
+                  .update({ sheet_synced: true })
+                  .eq("id", guest.id);
               })
-              .catch((sheetErr) =>
-                console.error("Google Sheets sync error:", sheetErr),
-              )
+              .catch((e) => console.error("Google Sheets sync error:", e))
           : Promise.resolve(),
       ]),
     );
 
-    // Returns immediately — the guest sees success as soon as the DB
-    // write lands, not after email/Sheets finish.
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("Submit error:", err);
-    return NextResponse.json(
-      { success: false, message: "Server error submitting RSVP." },
-      { status: 500 },
-    );
+    return fail("Server error submitting RSVP.", 500);
   }
 }

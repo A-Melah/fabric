@@ -20,6 +20,7 @@ import {
   Check,
   Landmark,
 } from "lucide-react";
+import { RELATIONSHIPS } from "@/lib/rsvp-options";
 
 /* ================= EDIT THESE ================= */
 const VENUE_NAME = "Kingdom Hall of Jehovah's Witnesses";
@@ -39,16 +40,16 @@ const RSVP_BY = "November 30, 2026"; // TODO
 
 const BANK = {
   NGN: [
-    ["Bank Name", "Bank name"],
-    ["Account Name", "Account holder name"],
-    ["Account Number", "0000000000"],
+    ["Bank Name", "First Bank of Nigeria"],
+    ["Account Name", "Abanum Iruoghene Isakpa"],
+    ["Account Number", "3088963058"],
   ],
   USD: [
-    ["Bank Name", "Bank name"],
-    ["Account Name", "Account holder name"],
-    ["Account Number", "0000000000"],
-    ["SWIFT / BIC", "XXXXXXXX"],
-    ["Routing / IBAN", "000000000"],
+    ["Bank Name", "Access Bank"],
+    ["Account Name", "Abanum Iruoghene Isakpa"],
+    ["Account Number", "1676754859"],
+    ["Account Type", "Domiciliary Savings Account Tier 1"],
+    // ["Routing / IBAN", "000000000"],
   ],
 };
 /* ============================================== */
@@ -238,7 +239,7 @@ function FloatingRSVP() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           whileTap={{ scale: 0.96 }}
-          className="fixed bottom-6 left-6 z-50 flex items-center gap-2 px-6 py-3.5 rounded-full bg-wedding-olive text-white border border-wedding-gold/60 shadow-glass"
+          className="fixed bottom-6 left-6 z-50 flex items-center gap-2 px-6 py-3.5 rounded-full bg-wedding-lilacDeep text-white border border-wedding-gold/60 shadow-glass"
         >
           <Heart className="w-4 h-4 fill-current" />
           <span className="text-sm font-display tracking-wide">RSVP</span>
@@ -264,7 +265,7 @@ function PlaceholderCard({ label }) {
           color="#f6e3a1"
         />
       </div>
-      <span className="font-display italic text-xl text-wedding-oliveDeep text-center px-4">
+      <span className="font-display italic text-xl text-wedding-lilacDeep text-center px-4">
         {label}
       </span>
       <span className="text-xs text-wedding-inkSoft">Photo coming soon</span>
@@ -340,7 +341,7 @@ function ModernGallery({ items }) {
                       sizes="320px"
                       priority={idx === 0}
                     />
-                    <span className="absolute inset-x-0 bottom-0 p-4 bg-linear-to-t from-wedding-oliveDark/80 to-transparent text-white font-display italic text-lg text-left">
+                    <span className="absolute inset-x-0 bottom-0 p-4 bg-linear-to-t from-wedding-lilacDeep/80 to-transparent text-white font-display italic text-lg text-left">
                       {it.label}
                     </span>
                   </>
@@ -367,7 +368,7 @@ function ModernGallery({ items }) {
               key={idx}
               onClick={() => setI(idx)}
               aria-label={`Photo ${idx + 1}`}
-              className={`h-1.5 rounded-full transition-all ${idx === i ? "w-8 bg-wedding-olive" : "w-3 bg-wedding-lilac/50"}`}
+              className={`h-1.5 rounded-full transition-all ${idx === i ? "w-8 bg-wedding-lilacDeep" : "w-3 bg-wedding-lilac/50"}`}
             />
           ))}
         </div>
@@ -471,7 +472,7 @@ function Countdown({ target }) {
           key={label}
           className="bg-white/90 gold-border relative p-2 md:p-3 rounded-xl shadow-glassSoft"
         >
-          <span className="text-xl sm:text-2xl md:text-4xl font-semibold text-wedding-oliveDeep block font-display tabular-nums">
+          <span className="text-xl sm:text-2xl md:text-4xl font-semibold text-wedding-lilacDeep block font-display tabular-nums">
             {value}
           </span>
           <span className="text-xs text-wedding-inkSoft">{label}</span>
@@ -519,6 +520,8 @@ export default function WeddingInvite() {
   const [inputPhone, setInputPhone] = useState("");
   const [formData, setFormData] = useState({
     attendance: "Attending",
+    relationship: "",
+    relationshipOther: "",
     additionalGuests: [],
     message: "",
   });
@@ -583,6 +586,8 @@ export default function WeddingInvite() {
           guestId: guestRecord.id,
           phone: inputPhone,
           attendance: formData.attendance,
+          relationship: formData.relationship,
+          relationshipOther: formData.relationshipOther,
           additionalGuests: formData.additionalGuests,
           message: formData.message,
         }),
@@ -669,7 +674,7 @@ export default function WeddingInvite() {
   const inputCls =
     "w-full bg-wedding-ivory border border-wedding-gold/40 rounded-xl px-4 py-3 text-wedding-ink focus:outline-none focus:border-wedding-lilacDeep transition text-sm";
   const btnCls =
-    "w-full bg-wedding-olive hover:bg-wedding-oliveDeep text-white py-3.5 rounded-xl font-medium transition flex items-center justify-center gap-2 shadow-glass disabled:opacity-50";
+    "w-full bg-wedding-lilacDeep hover:bg-wedding-lilac text-white py-3.5 rounded-xl font-medium transition flex items-center justify-center gap-2 shadow-glass disabled:opacity-50";
   const fade = {
     initial: { opacity: 0, y: 30 },
     whileInView: { opacity: 1, y: 0 },
@@ -696,15 +701,15 @@ export default function WeddingInvite() {
               <span className="text-sm text-wedding-lilacDeep mb-3 font-display italic">
                 You're invited to the wedding of
               </span>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-display mb-2 text-wedding-oliveDeep">
-                Franca &amp; Abanum
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-display mb-2 text-wedding-lilacDeep">
+                Franca <span className="gold-text italic">&amp;</span> Abanum
               </h1>
               <p className="text-sm text-wedding-inkSoft mb-10">
                 December 12, 2026
               </p>
               <button
                 onClick={enter}
-                className="bg-wedding-olive hover:bg-wedding-oliveDeep text-white px-8 py-3.5 rounded-full font-medium transition shadow-glass flex items-center gap-2 border border-wedding-gold/60"
+                className="bg-wedding-lilacDeep hover:bg-wedding-lilac text-white px-8 py-3.5 rounded-full font-medium transition shadow-glass flex items-center gap-2 border border-wedding-gold/60"
               >
                 <Music2 className="w-4 h-4" /> Open invitation
               </button>
@@ -767,7 +772,7 @@ export default function WeddingInvite() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="text-4xl sm:text-5xl md:text-7xl text-wedding-oliveDeep mb-2"
+            className="text-4xl sm:text-5xl md:text-7xl text-wedding-lilacDeep mb-2"
           >
             Franca <span className="gold-text italic">&amp;</span> Abanum
           </motion.h1>
@@ -779,7 +784,7 @@ export default function WeddingInvite() {
 
           <a
             href="#rsvp"
-            className="inline-flex items-center gap-2 bg-wedding-olive hover:bg-wedding-oliveDeep text-white px-10 py-3.5 rounded-full font-medium transition shadow-glass border border-wedding-gold/60"
+            className="inline-flex items-center gap-2 bg-wedding-lilacDeep hover:bg-wedding-lilac text-white px-10 py-3.5 rounded-full font-medium transition shadow-glass border border-wedding-gold/60"
           >
             <Heart className="w-4 h-4 fill-current" /> RSVP now
           </a>
@@ -807,7 +812,7 @@ export default function WeddingInvite() {
         <BloomScatter count={8} className="opacity-60" />
         <div className="relative max-w-4xl mx-auto">
           <motion.div {...fade} className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl mb-4 text-wedding-oliveDeep">
+            <h2 className="text-4xl md:text-5xl mb-4 text-wedding-lilacDeep">
               Where it all began
             </h2>
             <p className="text-wedding-inkSoft max-w-xl mx-auto text-sm md:text-base">
@@ -827,7 +832,7 @@ export default function WeddingInvite() {
                     {...fade}
                     className={`space-y-4 ${reverse ? "md:order-2" : ""}`}
                   >
-                    <h3 className="text-2xl md:text-3xl text-wedding-oliveDeep">
+                    <h3 className="text-2xl md:text-3xl text-wedding-lilacDeep">
                       {c.title}
                     </h3>
                     <p className="text-wedding-inkSoft leading-relaxed text-sm md:text-base">
@@ -992,7 +997,7 @@ export default function WeddingInvite() {
       {/* GALLERY */}
       <section className="py-24 px-6 bg-wedding-ivory overflow-hidden">
         <motion.div {...fade} className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl mb-4 text-wedding-oliveDeep">
+          <h2 className="text-4xl md:text-5xl mb-4 text-wedding-lilacDeep">
             Photo gallery
           </h2>
           <p className="text-wedding-inkSoft max-w-xl mx-auto text-sm md:text-base">
@@ -1003,16 +1008,16 @@ export default function WeddingInvite() {
       </section>
 
       {/* WHEN & WHERE */}
-      <section className="relative py-24 px-6 bg-wedding-oliveDark overflow-hidden">
+      <section className="relative py-24 px-6 bg-wedding-mist overflow-hidden">
         <BloomDrift count={4} />
         <motion.div
           {...fade}
           className="relative z-10 max-w-lg mx-auto text-center mb-10"
         >
-          <h2 className="text-4xl md:text-5xl gold-text mb-4">
+          <h2 className="text-4xl md:text-5xl text-wedding-lilacDeep mb-4">
             When &amp; where
           </h2>
-          <p className="text-wedding-goldPale/90 text-sm md:text-base leading-relaxed">
+          <p className="text-wedding-inkSoft text-sm md:text-base leading-relaxed">
             Join us for an afternoon of love, laughter, and celebration with
             family and close friends as we begin forever together.
           </p>
@@ -1020,24 +1025,24 @@ export default function WeddingInvite() {
 
         <motion.div
           {...fade}
-          className="glass-sheen relative z-10 max-w-lg mx-auto bg-white/[0.07] p-8 md:p-12 rounded-3xl gold-border shadow-glassDark text-center"
+          className="glass-sheen relative z-10 max-w-lg mx-auto bg-white/80 p-8 md:p-12 rounded-3xl gold-border shadow-glass text-center"
         >
-          <Calendar className="w-8 h-8 text-wedding-goldPale mx-auto mb-4" />
-          <span className="text-sm text-wedding-goldPale font-display italic">
+          <Calendar className="w-8 h-8 text-wedding-lilacDeep mx-auto mb-4" />
+          <span className="text-sm text-wedding-lilacDeep font-display italic">
             Save the date
           </span>
           <h2 className="text-5xl md:text-6xl gold-text my-3">
             12 · 12 · 2026
           </h2>
-          <p className="text-wedding-goldPale text-sm mb-8">
+          <p className="text-wedding-inkSoft text-sm mb-8">
             Saturday, 1:00 PM WAT
           </p>
 
-          <div className="bg-white/10 rounded-2xl p-5 mb-8 text-wedding-ivory">
-            <div className="font-display text-lg mb-3 text-wedding-goldPale">
+          <div className="bg-wedding-ivory rounded-2xl p-5 mb-8 text-wedding-ink">
+            <div className="font-display text-lg mb-3 text-wedding-lilacDeep">
               December 2026
             </div>
-            <div className="grid grid-cols-7 gap-1 text-center text-xs mb-2 text-wedding-goldPale/70 font-semibold">
+            <div className="grid grid-cols-7 gap-1 text-center text-xs mb-2 text-wedding-lilacDeep/70 font-semibold">
               {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
                 <span key={d}>{d}</span>
               ))}
@@ -1053,8 +1058,8 @@ export default function WeddingInvite() {
                       key={day}
                       className={`py-2 rounded-lg flex items-center justify-center ${
                         day === 12
-                          ? "bg-wedding-lilac text-wedding-oliveDark font-bold ring-2 ring-wedding-gold"
-                          : "text-wedding-ivory/90"
+                          ? "bg-wedding-lilac text-white font-bold ring-2 ring-wedding-gold"
+                          : "text-wedding-ink/80"
                       }`}
                     >
                       {day === 12 ? (
@@ -1071,17 +1076,15 @@ export default function WeddingInvite() {
             </div>
           </div>
 
-          <div className="text-left bg-white/10 rounded-2xl p-5 mb-4">
+          <div className="text-left bg-wedding-ivory rounded-2xl p-5 mb-4">
             <div className="flex items-start gap-3 mb-4">
-              <MapPin className="w-5 h-5 text-wedding-goldPale mt-0.5 shrink-0" />
+              <MapPin className="w-5 h-5 text-wedding-lilacDeep mt-0.5 shrink-0" />
               <div>
-                <h3 className="text-lg text-wedding-ivory">{VENUE_NAME}</h3>
-                <p className="text-sm text-wedding-goldPale/90">
-                  {VENUE_ADDRESS}
-                </p>
+                <h3 className="text-lg text-wedding-ink">{VENUE_NAME}</h3>
+                <p className="text-sm text-wedding-inkSoft">{VENUE_ADDRESS}</p>
               </div>
             </div>
-            <div className="rounded-xl overflow-hidden aspect-4/3 bg-wedding-oliveDeep">
+            <div className="rounded-xl overflow-hidden aspect-4/3 bg-wedding-mist">
               <iframe
                 title="Venue map"
                 src={`https://www.google.com/maps?q=${encodeURIComponent(MAP_QUERY)}&output=embed`}
@@ -1098,7 +1101,7 @@ export default function WeddingInvite() {
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(MAP_QUERY)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 bg-wedding-lilac hover:bg-wedding-lilacDeep text-wedding-oliveDark hover:text-white px-5 py-3.5 rounded-xl text-sm font-medium transition"
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-wedding-lilacDeep hover:bg-wedding-lilac text-white px-5 py-3.5 rounded-xl text-sm font-medium transition"
             >
               <Navigation className="w-4 h-4" /> Get directions
             </a>
@@ -1106,7 +1109,7 @@ export default function WeddingInvite() {
               href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Franca+%26+Abanum+Wedding&dates=20261212T120000Z/20261212T170000Z&details=Join+us+for+our+wedding+celebration!&location=Kingdom+Hall+of+Jehovah%27s+Witnesses"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 inline-flex items-center justify-center gap-2 gold-fill hover:brightness-110 text-wedding-oliveDark px-5 py-3.5 rounded-xl text-sm font-medium transition"
+              className="flex-1 inline-flex items-center justify-center gap-2 gold-fill hover:brightness-110 text-wedding-ink px-5 py-3.5 rounded-xl text-sm font-medium transition"
             >
               <Clock className="w-4 h-4" /> Add to calendar
             </a>
@@ -1117,7 +1120,7 @@ export default function WeddingInvite() {
       {/* DRESS CODE */}
       <section className="py-24 px-6 bg-wedding-ivory text-center">
         <motion.div {...fade} className="max-w-4xl mx-auto">
-          <h2 className="text-4xl md:text-5xl mb-4 text-wedding-oliveDeep">
+          <h2 className="text-4xl md:text-5xl mb-4 text-wedding-lilacDeep">
             Dress code &amp; colours
           </h2>
           <p className="text-wedding-inkSoft mb-12">
@@ -1147,7 +1150,7 @@ export default function WeddingInvite() {
       <section className="py-24 px-6 bg-wedding-mist">
         <div className="max-w-3xl mx-auto">
           <motion.div {...fade} className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl mb-3 text-wedding-oliveDeep">
+            <h2 className="text-4xl md:text-5xl mb-3 text-wedding-lilacDeep">
               Frequently asked questions
             </h2>
             <p className="text-wedding-inkSoft">
@@ -1190,7 +1193,7 @@ export default function WeddingInvite() {
       {/* RSVP */}
       <section
         id="rsvp"
-        className="relative py-24 bg-wedding-oliveDark px-6 overflow-hidden"
+        className="relative py-24 bg-wedding-lilac/30 px-6 overflow-hidden"
       >
         <BloomDrift count={4} />
         <motion.div
@@ -1231,7 +1234,7 @@ export default function WeddingInvite() {
                 />
               </div>
               <button type="submit" disabled={submitting} className={btnCls}>
-                {submitting ? "Verifying..." : "Open my invitation"}
+                {submitting ? "Verifying..." : "Access invitation"}
               </button>
               {errorMessage && (
                 <div className="flex items-center gap-2 text-rose-600 bg-rose-500/10 p-3 rounded-xl text-sm justify-center">
@@ -1269,6 +1272,50 @@ export default function WeddingInvite() {
                   <option value="Declined">Regretfully decline</option>
                 </select>
               </div>
+
+              {/* Relationship: attending guests only */}
+              {formData.attendance === "Attending" && (
+                <div>
+                  <label className="block text-xs text-wedding-inkSoft mb-2 font-medium">
+                    How do you know the couple?
+                  </label>
+                  <select
+                    required
+                    value={formData.relationship}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        relationship: e.target.value,
+                      })
+                    }
+                    className={inputCls}
+                  >
+                    <option value="" disabled>
+                      Select one
+                    </option>
+                    {RELATIONSHIPS.map((r) => (
+                      <option key={r.value} value={r.value}>
+                        {r.label}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.relationship === "Other" && (
+                    <input
+                      type="text"
+                      maxLength={60}
+                      value={formData.relationshipOther}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          relationshipOther: e.target.value,
+                        })
+                      }
+                      className={`${inputCls} mt-3`}
+                      placeholder="Tell us how you know us"
+                    />
+                  )}
+                </div>
+              )}
 
               {formData.attendance === "Attending" &&
                 guestRecord.maxFamilySize > 1 && (
@@ -1376,7 +1423,7 @@ export default function WeddingInvite() {
           className="relative z-10 max-w-md mx-auto text-center"
         >
           <Landmark className="w-8 h-8 text-wedding-gold mx-auto mb-3" />
-          <h2 className="text-3xl md:text-4xl mb-3 text-wedding-oliveDeep">
+          <h2 className="text-3xl md:text-4xl mb-3 text-wedding-lilacDeep">
             With love, a gift
           </h2>
           <p className="text-sm text-wedding-inkSoft mb-8">
@@ -1396,7 +1443,7 @@ export default function WeddingInvite() {
                 onClick={() => setCurrency(c)}
                 className={`px-7 py-2 rounded-full text-sm font-medium transition ${
                   currency === c
-                    ? "bg-wedding-olive text-white shadow-glassSoft"
+                    ? "bg-wedding-lilacDeep text-white shadow-glassSoft"
                     : "text-wedding-inkSoft hover:text-wedding-ink"
                 }`}
               >

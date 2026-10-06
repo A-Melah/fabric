@@ -1,24 +1,23 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { phoneKey } from "@/lib/phone";
 
 export async function POST(request) {
   try {
-    const { phone: inputPhone } = await request.json();
+    const { phone } = await request.json();
+    const key = phoneKey(phone);
 
-    const cleanInputPhone = String(inputPhone || "").replace(/\D/g, "");
-
-    if (!cleanInputPhone) {
+    if (!key) {
       return NextResponse.json(
         { success: false, message: "Please enter a valid phone number." },
         { status: 400 },
       );
     }
 
-    // Look up guest(s) directly by phone — no token involved anymore.
     const { data: guests, error } = await supabaseAdmin
       .from("guests")
-      .select("*")
-      .eq("phone", cleanInputPhone);
+      .select("id, name, max_family_size, has_responded")
+      .eq("phone_key", key);
 
     if (error) {
       console.error("Verification lookup error:", error);
@@ -39,8 +38,7 @@ export async function POST(request) {
       );
     }
 
-    // If more than one record shares this phone, prefer one that hasn't
-    // responded yet so a second household isn't blocked by the first's reply.
+    // If several records share a phone, prefer one that hasn't responded yet.
     const guest = guests.find((g) => !g.has_responded) || guests[0];
 
     return NextResponse.json({

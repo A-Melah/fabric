@@ -13,31 +13,32 @@ const bodyFont = Jost({
   variable: "--font-body",
 });
 
+// Set NEXT_PUBLIC_SITE_URL in your hosting dashboard (e.g. https://francaandabanum.com).
+// It is used for link previews (WhatsApp, Facebook, X) so they point at the live domain.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata = {
-  metadataBase: new URL("https://joywedsjoshua.amdigital.ng"),
-  title: "Joy & Joshua — November 28, 2026",
-  description: "Join us as we celebrate our wedding in Warri, Nigeria.",
+  metadataBase: new URL(SITE_URL),
+  title: "Franca & Abanum — December 12, 2026",
+  description: "Join us as we celebrate our wedding on December 12, 2026.",
   openGraph: {
-    title: "Joy & Joshua are getting married",
-    description: "November 28, 2026 · Warri, Nigeria",
-    siteName: "Joy & Joshua's Wedding",
-    url: "https://joywedsjoshua.amdigital.ng",
+    title: "Franca & Abanum are getting married",
+    description: "December 12, 2026 · You are invited",
+    siteName: "Franca & Abanum's Wedding",
+    url: SITE_URL,
     type: "website",
-    images: [
-      {
-        url: "/images/couple-og.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Joy & Joshua",
-      },
-    ],
+    // The preview image comes from app/opengraph-image.js automatically.
   },
   twitter: {
     card: "summary_large_image",
-    title: "Joy & Joshua are getting married",
-    description: "November 28, 2026 · Warri, Nigeria",
-    images: ["/images/couple-og.jpg"],
+    title: "Franca & Abanum are getting married",
+    description: "December 12, 2026 · You are invited",
+    // X falls back to the Open Graph image above.
   },
+};
+
+export const viewport = {
+  themeColor: "#fffdf8",
 };
 
 export default function RootLayout({ children }) {
