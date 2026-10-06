@@ -15,7 +15,8 @@ const bodyFont = Jost({
 
 // Set NEXT_PUBLIC_SITE_URL in your hosting dashboard (e.g. https://francaandabanum.com).
 // It is used for link previews (WhatsApp, Facebook, X) so they point at the live domain.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:300";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://francawedsabanum.amdigital.ng";
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
