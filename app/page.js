@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart,
+  Gift,
   Calendar,
   Clock,
   ChevronDown,
@@ -244,6 +245,53 @@ function FloatingRSVP() {
           <Heart className="w-4 h-4 fill-current" />
           <span className="text-sm font-display tracking-wide">RSVP</span>
         </motion.a>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function FloatingGift() {
+  const [pastHero, setPastHero] = useState(false);
+  const [giftInView, setGiftInView] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () =>
+      setPastHero(window.scrollY > window.innerHeight * 0.7);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const el = document.getElementById("gift");
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => setGiftInView(e.isIntersecting),
+      { threshold: 0.15 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {pastHero && !giftInView && (
+        <motion.button
+          type="button"
+          onClick={() =>
+            document
+              .getElementById("gift")
+              ?.scrollIntoView({ behavior: "smooth", block: "start" })
+          }
+          aria-label="Gift details"
+          title="Gift details"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          whileTap={{ scale: 0.94 }}
+          className="fixed bottom-22 right-6 z-50 p-4 rounded-full bg-white/90 border border-wedding-gold/60 text-wedding-lilacDeep shadow-glass hover:bg-white transition"
+        >
+          <Gift className="w-4 h-4" />
+        </motion.button>
       )}
     </AnimatePresence>
   );
@@ -749,6 +797,7 @@ export default function WeddingInvite() {
       </div>
 
       <FloatingRSVP />
+      <FloatingGift />
 
       {/* HERO */}
       <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 pt-20 pb-12 overflow-hidden">
@@ -1117,8 +1166,88 @@ export default function WeddingInvite() {
         </motion.div>
       </section>
 
+      {/* GIFT / BANK DETAILS */}
+      <section
+        id="gift"
+        className="relative py-24 px-6 bg-wedding-ivory overflow-hidden"
+      >
+        <BloomScatter count={7} className="opacity-50" />
+        <motion.div
+          {...fade}
+          className="relative z-10 max-w-md mx-auto text-center"
+        >
+          <Landmark className="w-8 h-8 text-wedding-gold mx-auto mb-3" />
+          <h2 className="text-3xl md:text-4xl mb-3 text-wedding-lilacDeep">
+            With love, a gift
+          </h2>
+          <p className="text-sm text-wedding-inkSoft mb-8">
+            Your presence is the greatest gift. If you would like to bless us
+            further, choose a currency to see our account details.
+          </p>
+
+          <div
+            className="inline-flex p-1 rounded-full bg-wedding-mist border border-wedding-lilac/50 mb-6"
+            role="tablist"
+          >
+            {["NGN", "USD"].map((c) => (
+              <button
+                key={c}
+                role="tab"
+                aria-selected={currency === c}
+                onClick={() => setCurrency(c)}
+                className={`px-7 py-2 rounded-full text-sm font-medium transition ${
+                  currency === c
+                    ? "bg-wedding-lilacDeep text-white shadow-glassSoft"
+                    : "text-wedding-inkSoft hover:text-wedding-ink"
+                }`}
+              >
+                {c === "NGN" ? "₦ NGN" : "$ USD"}
+              </button>
+            ))}
+          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currency}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-3xl gold-border relative shadow-glass divide-y divide-wedding-gold/20 text-left"
+            >
+              {BANK[currency].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between gap-4 px-6 py-4"
+                >
+                  <div>
+                    <span className="block text-xs text-wedding-inkSoft/80">
+                      {label}
+                    </span>
+                    <span className="font-display text-wedding-ink">
+                      {value}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => copy(value, `${currency}-${label}`)}
+                    aria-label={`Copy ${label}`}
+                    className="p-2 rounded-full text-wedding-lilacDeep hover:bg-wedding-mist transition"
+                  >
+                    {copied === `${currency}-${label}` ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        </motion.div>
+      </section>
+
       {/* DRESS CODE */}
-      <section className="py-24 px-6 bg-wedding-ivory text-center">
+      <section className="py-24 px-6 bg-wedding-mist text-center">
         <motion.div {...fade} className="max-w-4xl mx-auto">
           <h2 className="text-4xl md:text-5xl mb-4 text-wedding-lilacDeep">
             Dress code &amp; colours
@@ -1147,7 +1276,7 @@ export default function WeddingInvite() {
       </section>
 
       {/* FAQ */}
-      <section className="py-24 px-6 bg-wedding-mist">
+      <section className="py-24 px-6 bg-wedding-ivory">
         <div className="max-w-3xl mx-auto">
           <motion.div {...fade} className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl mb-3 text-wedding-lilacDeep">
@@ -1412,83 +1541,6 @@ export default function WeddingInvite() {
               </p>
             </motion.div>
           )}
-        </motion.div>
-      </section>
-
-      {/* GIFT / BANK DETAILS */}
-      <section className="relative py-24 px-6 bg-wedding-ivory overflow-hidden">
-        <BloomScatter count={7} className="opacity-50" />
-        <motion.div
-          {...fade}
-          className="relative z-10 max-w-md mx-auto text-center"
-        >
-          <Landmark className="w-8 h-8 text-wedding-gold mx-auto mb-3" />
-          <h2 className="text-3xl md:text-4xl mb-3 text-wedding-lilacDeep">
-            With love, a gift
-          </h2>
-          <p className="text-sm text-wedding-inkSoft mb-8">
-            Your presence is the greatest gift. If you would like to bless us
-            further, choose a currency to see our account details.
-          </p>
-
-          <div
-            className="inline-flex p-1 rounded-full bg-wedding-mist border border-wedding-lilac/50 mb-6"
-            role="tablist"
-          >
-            {["NGN", "USD"].map((c) => (
-              <button
-                key={c}
-                role="tab"
-                aria-selected={currency === c}
-                onClick={() => setCurrency(c)}
-                className={`px-7 py-2 rounded-full text-sm font-medium transition ${
-                  currency === c
-                    ? "bg-wedding-lilacDeep text-white shadow-glassSoft"
-                    : "text-wedding-inkSoft hover:text-wedding-ink"
-                }`}
-              >
-                {c === "NGN" ? "₦ NGN" : "$ USD"}
-              </button>
-            ))}
-          </div>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currency}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-3xl gold-border relative shadow-glass divide-y divide-wedding-gold/20 text-left"
-            >
-              {BANK[currency].map(([label, value]) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-between gap-4 px-6 py-4"
-                >
-                  <div>
-                    <span className="block text-xs text-wedding-inkSoft/80">
-                      {label}
-                    </span>
-                    <span className="font-display text-wedding-ink">
-                      {value}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => copy(value, `${currency}-${label}`)}
-                    aria-label={`Copy ${label}`}
-                    className="p-2 rounded-full text-wedding-lilacDeep hover:bg-wedding-mist transition"
-                  >
-                    {copied === `${currency}-${label}` ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
         </motion.div>
       </section>
 
