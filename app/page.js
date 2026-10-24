@@ -25,12 +25,14 @@ import { RELATIONSHIPS } from "@/lib/rsvp-options";
 
 /* ================= EDIT THESE ================= */
 const VENUE_NAME = "Kingdom Hall of Jehovah's Witnesses";
-const VENUE_ADDRESS = "Street address, City, State"; // TODO
-const MAP_QUERY = "Kingdom Hall of Jehovah's Witnesses, Warri, Nigeria"; // TODO: exact address
+const VENUE_ADDRESS =
+  "Opposite Rainoil Filling Station, PTI Road, Effurun Delta State"; // TODO
+const MAP_QUERY =
+  "Kingdom Hall of Jehovah's witnesses, PTI road, Effurun GRA, Warri 330102, Delta"; // TODO: exact address
 const WEDDING_ISO = "2026-12-12T13:00:00+01:00";
 // Set to true once real gallery photos are in /public/images/gallery/.
 // Cards without an image URL (or whose file is missing) still fall back to a placeholder.
-const GALLERY_USE_IMAGES = false;
+const GALLERY_USE_IMAGES = true;
 // Quote section: replace with your own words or a verse you love
 const QUOTE_TEXT =
   "Love is not found once and kept; it is chosen again, gently, every single day.";
@@ -443,11 +445,11 @@ function HeroPortrait() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-        className="absolute inset-6 rounded-[50%] p-1.5 gold-fill shadow-glass"
+        className="absolute inset-6 rounded-[50%] p-0.5 gold-fill shadow-glass"
       >
         <div className="relative w-full h-full rounded-[50%] overflow-hidden bg-wedding-mist border-4 border-white">
           <SmartImage
-            src="/images/couple/hero.jpeg"
+            src="/images/couple/herov2.jpg"
             alt="Franca and Abanum"
             label="Franca & Abanum"
             priority
@@ -530,6 +532,40 @@ function Countdown({ target }) {
   );
 }
 
+function MeetingDuo({ people }) {
+  return (
+    <div className="relative w-full aspect-4/5">
+      {people.map((p, i) => (
+        <motion.div
+          key={p.name}
+          initial={{
+            opacity: 0,
+            x: i === 0 ? -50 : 50,
+            rotate: i === 0 ? -10 : 10,
+          }}
+          whileInView={{ opacity: 1, x: 0, rotate: i === 0 ? -4 : 4 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1, delay: i * 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className={`absolute w-[62%] aspect-3/4 rounded-4xl p-2 bg-white gold-border shadow-glass ${
+            i === 0 ? "left-0 top-0 z-10" : "right-0 bottom-0 z-20"
+          }`}
+        >
+          <div className="relative w-full h-full rounded-3xl overflow-hidden">
+            <SmartImage
+              src={p.image}
+              alt={p.name}
+              label={p.name}
+              className="object-top"
+              sizes="(max-width: 768px) 60vw, 280px"
+            />
+          </div>
+        </motion.div>
+      ))}
+      <Blossom className="absolute z-30 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 drop-shadow" />
+    </div>
+  );
+}
+
 /* ---------- Page ---------- */
 
 export default function WeddingInvite() {
@@ -537,20 +573,35 @@ export default function WeddingInvite() {
   const [hasEntered, setHasEntered] = useState(false);
   const audioRef = useRef(null);
 
-  const toggleAudio = () => {
-    if (isPlaying) audioRef.current.pause();
-    else
-      audioRef.current
-        .play()
-        .catch((e) => console.log("Audio play blocked:", e));
-    setIsPlaying(!isPlaying);
+  const safePlay = () => {
+    try {
+      const p = audioRef.current?.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => setIsPlaying(true)).catch((e) => {
+          console.log("Audio play blocked:", e);
+          setIsPlaying(false);
+        });
+      } else {
+        setIsPlaying(true);
+      }
+    } catch (e) {
+      console.log("Audio error:", e);
+      setIsPlaying(false);
+    }
   };
+
+  const toggleAudio = () => {
+    if (isPlaying) {
+      audioRef.current?.pause();
+      setIsPlaying(false);
+    } else {
+      safePlay();
+    }
+  };
+
   const enter = () => {
-    audioRef.current
-      ?.play()
-      .catch((e) => console.log("Audio play blocked:", e));
-    setIsPlaying(true);
-    setHasEntered(true);
+    setHasEntered(true); // open the page first, music is a bonus
+    safePlay();
   };
 
   const weddingDate = new Date(WEDDING_ISO).getTime();
@@ -665,30 +716,48 @@ export default function WeddingInvite() {
   const chapters = [
     {
       title: "How We Met",
-      body: "Replace this with the story of how your paths crossed.",
+      body: [
+        "It began with a familiar face on a little road to work. A chance encounter brought two old acquaintances together again, and warm greetings blossomed into friendship, laughter, and a love that felt like home.",
+        "Somewhere along the way, we found something beautiful—a love worth choosing, a future worth building, and a forever worth sharing.",
+        "What began as an ordinary walk became the beginning of our extraordinary journey.",
+        "Forever starts with us.",
+      ],
       label: "First Photo",
-      // image: "/images/story/chapter1.jpeg",
+      duo: [
+        { name: "Franca", image: "/images/story/franca.jpeg" },
+        { name: "Abanum", image: "/images/story/abanum.jpeg" },
+      ],
     },
     {
       title: "Growing Together",
-      body: "Replace this with how friendship became love.",
+      body: [
+        "Our love story is one of growth, shared dreams, and inspiring each other to achieve more.",
+        "Through our shared passion for Occupational Safety and Health, Abanum, a NEBOSH Scholar and holder of the International General Certificate, became a source of guidance and encouragement in my professional journey. His support inspired me to keep pursuing my dreams, and in 2026, I won the NEBOSH L’Oréal International Bursary: Enabling Women in Health and Safety. This milestone reminds me of the beauty of having someone who believes in my potential.",
+        "Together, we have learned that love means more than sharing beautiful moments; it means supporting each other’s dreams, celebrating every victory, and growing together.",
+        "Together, we are building a love story rooted in purpose, possibility, and shared success.",
+      ],
       label: "Together",
-      // image: "/images/story/chapter2.jpeg",
+      image: "/images/story/growing-together.jpeg",
     },
     {
-      title: "The Question",
-      body: "Replace this with the proposal story.",
-      label: "The Proposal",
-      // image: "/images/story/chapter3.jpeg",
+      title: "A Beginning Called Forever",
+      body: [
+        "Somewhere along the way, we stopped imagining a future apart and began dreaming of all we could become together. Forever no longer felt like a distant dream; it felt like home.",
+        "As we begin this new chapter, we choose to love, support, and grow with each other through every season of life. We look forward to building a home filled with laughter, understanding, shared dreams, and beautiful memories.",
+        "Ours may not be a perfect love story, but it is real—rooted in friendship, guided by purpose, and strengthened by the daily choice to choose each other.",
+        "Today, tomorrow, and always, it will be us.",
+      ],
+      label: "Forever",
+      image: "/images/story/forever.png",
     },
   ];
 
   const memories = [
-    { label: "First Hello", image: "/images/gallery/memory1.jpeg" },
-    { label: "Sunday Lunches", image: "/images/gallery/memory2.jpeg" },
-    { label: "Road Trips", image: "/images/gallery/memory3.jpeg" },
-    { label: "Family & Friends", image: "/images/gallery/memory4.jpeg" },
-    { label: "The Proposal", image: "/images/gallery/memory5.jpeg" },
+    { label: "", image: "/images/gallery/pic1.jpg" },
+    { label: "", image: "/images/gallery/pic2.jpg" },
+    { label: "", image: "/images/gallery/pic3.jpg" },
+    { label: "", image: "/images/gallery/pic4.jpg" },
+    { label: "", image: "/images/gallery/pic5.jpg" },
   ];
 
   const faqs = [
@@ -884,21 +953,27 @@ export default function WeddingInvite() {
                     <h3 className="text-2xl md:text-3xl text-wedding-lilacDeep">
                       {c.title}
                     </h3>
-                    <p className="text-wedding-inkSoft leading-relaxed text-sm md:text-base">
-                      {c.body}
-                    </p>
+                    <div className="space-y-4 text-wedding-inkSoft leading-relaxed text-sm md:text-base">
+                      {c.body.map((para, pi) => (
+                        <p key={pi}>{para}</p>
+                      ))}
+                    </div>
                   </motion.div>
                   <div className={reverse ? "md:order-1" : ""}>
-                    <div className="rounded-4xl p-2 bg-white gold-border relative shadow-glass">
-                      <div className="relative w-full aspect-4/5 rounded-3xl overflow-hidden">
-                        <SmartImage
-                          src={c.image}
-                          alt={c.label}
-                          label={c.label}
-                          sizes="(max-width: 768px) 100vw, 450px"
-                        />
+                    {c.duo ? (
+                      <MeetingDuo people={c.duo} />
+                    ) : (
+                      <div className="rounded-4xl p-2 bg-white gold-border relative shadow-glass">
+                        <div className="relative w-full aspect-4/5 rounded-3xl overflow-hidden">
+                          <SmartImage
+                            src={c.image}
+                            alt={c.label}
+                            label={c.label}
+                            sizes="(max-width: 768px) 100vw, 450px"
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               );
@@ -906,6 +981,9 @@ export default function WeddingInvite() {
           </div>
           <div className="mt-16">
             <BloomRow />
+            <p className="mt-4 text-center font-display italic text-wedding-lilacDeep">
+              #FA_2026
+            </p>
           </div>
         </div>
       </section>
@@ -1152,7 +1230,7 @@ export default function WeddingInvite() {
               rel="noopener noreferrer"
               className="flex-1 inline-flex items-center justify-center gap-2 bg-wedding-lilacDeep hover:bg-wedding-lilac text-white px-5 py-3.5 rounded-xl text-sm font-medium transition"
             >
-              <Navigation className="w-4 h-4" /> Get directions
+              Get Directions
             </a>
             <a
               href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Franca+%26+Abanum+Wedding&dates=20261212T120000Z/20261212T170000Z&details=Join+us+for+our+wedding+celebration!&location=Kingdom+Hall+of+Jehovah%27s+Witnesses"
@@ -1160,7 +1238,7 @@ export default function WeddingInvite() {
               rel="noopener noreferrer"
               className="flex-1 inline-flex items-center justify-center gap-2 gold-fill hover:brightness-110 text-wedding-ink px-5 py-3.5 rounded-xl text-sm font-medium transition"
             >
-              <Clock className="w-4 h-4" /> Add to calendar
+              Add to Calendar
             </a>
           </div>
         </motion.div>
