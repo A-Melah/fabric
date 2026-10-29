@@ -11,17 +11,15 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  AlertCircle,
   Image as ImageIcon,
   Music2,
-  Lock,
   MapPin,
   Navigation,
   Copy,
   Check,
   Landmark,
+  Phone,
 } from "lucide-react";
-import { RELATIONSHIPS } from "@/lib/rsvp-options";
 
 /* ================= EDIT THESE ================= */
 const VENUE_NAME = "Kingdom Hall of Jehovah's Witnesses";
@@ -39,7 +37,9 @@ const QUOTE_TEXT =
 const QUOTE_NOTE =
   "We hope to keep choosing each other, and to find our way back to the love that brought us here.";
 const QUOTE_BY = "Franca & Abanum";
-const RSVP_BY = "November 30, 2026"; // TODO
+
+// Enquiry contacts shown under the FAQs
+const CONTACTS = ["08101036298", "07084236245"];
 
 const BANK = {
   NGN: [
@@ -205,53 +205,6 @@ function SmartImage({
   );
 }
 
-function FloatingRSVP() {
-  const [pastHero, setPastHero] = useState(false);
-  const [rsvpInView, setRsvpInView] = useState(false);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    if ("scrollRestoration" in window.history)
-      window.history.scrollRestoration = "manual";
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () =>
-      setPastHero(window.scrollY > window.innerHeight * 0.7);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    const el = document.getElementById("rsvp");
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([e]) => setRsvpInView(e.isIntersecting),
-      { threshold: 0.15 },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  return (
-    <AnimatePresence>
-      {pastHero && !rsvpInView && (
-        <motion.a
-          href="#rsvp"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          whileTap={{ scale: 0.96 }}
-          className="fixed bottom-6 left-6 z-50 flex items-center gap-2 px-6 py-3.5 rounded-full bg-wedding-lilacDeep text-white border border-wedding-gold/60 shadow-glass"
-        >
-          <Heart className="w-4 h-4 fill-current" />
-          <span className="text-sm font-display tracking-wide">RSVP</span>
-        </motion.a>
-      )}
-    </AnimatePresence>
-  );
-}
-
 function FloatingGift() {
   const [pastHero, setPastHero] = useState(false);
   const [giftInView, setGiftInView] = useState(false);
@@ -290,7 +243,7 @@ function FloatingGift() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           whileTap={{ scale: 0.94 }}
-          className="fixed bottom-22 right-6 z-50 p-4 rounded-full bg-white/90 border border-wedding-gold/60 text-wedding-lilacDeep shadow-glass hover:bg-white transition"
+          className="fixed bottom-6 left-6 z-50 p-4 rounded-full bg-white/90 border border-wedding-gold/60 text-wedding-lilacDeep shadow-glass hover:bg-white transition"
         >
           <Gift className="w-4 h-4" />
         </motion.button>
@@ -449,7 +402,7 @@ function HeroPortrait() {
       >
         <div className="relative w-full h-full rounded-[50%] overflow-hidden bg-wedding-mist border-4 border-white">
           <SmartImage
-            src="/images/couple/herov2.jpg"
+            src="/images/couple/opening_page.jpeg"
             alt="Franca and Abanum"
             label="Franca & Abanum"
             priority
@@ -566,12 +519,61 @@ function MeetingDuo({ people }) {
   );
 }
 
+/** Two photos in one arrangement: a large card with a smaller one overlapping its corner. */
+function PhotoStack({ photos }) {
+  const [main, second] = photos;
+  return (
+    <div className="relative w-full aspect-4/5">
+      <motion.div
+        initial={{ opacity: 0, y: 30, rotate: -4 }}
+        whileInView={{ opacity: 1, y: 0, rotate: -2 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        className="absolute left-0 top-0 w-[78%] aspect-4/5 rounded-4xl p-2 bg-white gold-border shadow-glass z-10"
+      >
+        <div className="relative w-full h-full rounded-3xl overflow-hidden">
+          <SmartImage
+            src={main.image}
+            alt={main.label}
+            label={main.label}
+            sizes="(max-width: 768px) 70vw, 340px"
+          />
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, x: 40, rotate: 10 }}
+        whileInView={{ opacity: 1, x: 0, rotate: 5 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.9, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        className="absolute right-0 bottom-0 w-[52%] aspect-4/5 rounded-3xl p-1.5 bg-white gold-border shadow-glass z-20"
+      >
+        <div className="relative w-full h-full rounded-2xl overflow-hidden">
+          <SmartImage
+            src={second.image}
+            alt={second.label}
+            label={second.label}
+            sizes="(max-width: 768px) 45vw, 230px"
+          />
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 /* ---------- Page ---------- */
 
 export default function WeddingInvite() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasEntered, setHasEntered] = useState(false);
   const audioRef = useRef(null);
+
+  // Always start at the top on load / refresh
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    if ("scrollRestoration" in window.history)
+      window.history.scrollRestoration = "manual";
+  }, []);
 
   const safePlay = () => {
     try {
@@ -613,94 +615,6 @@ export default function WeddingInvite() {
     };
   }, [hasEntered]);
 
-  /* RSVP */
-  const [guestRecord, setGuestRecord] = useState(null);
-  const [step, setStep] = useState("verify_phone");
-  const [inputPhone, setInputPhone] = useState("");
-  const [formData, setFormData] = useState({
-    attendance: "Attending",
-    relationship: "",
-    relationshipOther: "",
-    additionalGuests: [],
-    message: "",
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const handleVerifyPhone = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setErrorMessage("");
-    try {
-      const res = await fetch(`/api/rsvp/verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: inputPhone }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setGuestRecord(data.guest);
-        setStep(data.guest.hasResponded ? "already_submitted" : "form");
-      } else setErrorMessage(data.message || "Phone number not recognized.");
-    } catch {
-      setErrorMessage("Network error verifying guest details.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const maxAllowed = guestRecord?.maxFamilySize
-    ? guestRecord.maxFamilySize - 1
-    : 0;
-
-  const handleAttendanceChange = (val) => {
-    let add = formData.additionalGuests;
-    if (val === "Attending" && add.length === 0 && maxAllowed > 0) add = [""];
-    setFormData({ ...formData, attendance: val, additionalGuests: add });
-  };
-  const handleAdditionalGuestCountChange = (count) => {
-    const c = Math.max(0, Math.min(count, maxAllowed));
-    setFormData({
-      ...formData,
-      additionalGuests: Array(c)
-        .fill("")
-        .map((_, i) => formData.additionalGuests[i] || ""),
-    });
-  };
-  const handleAdditionalNameChange = (i, v) => {
-    const u = [...formData.additionalGuests];
-    u[i] = v;
-    setFormData({ ...formData, additionalGuests: u });
-  };
-
-  const handleFinalRsvpSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setErrorMessage("");
-    try {
-      const res = await fetch(`/api/rsvp/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          guestId: guestRecord.id,
-          phone: inputPhone,
-          attendance: formData.attendance,
-          relationship: formData.relationship,
-          relationshipOther: formData.relationshipOther,
-          additionalGuests: formData.additionalGuests,
-          message: formData.message,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) setStep("success_sent");
-      else setErrorMessage(data.message || "Failed to submit RSVP.");
-    } catch {
-      setErrorMessage("Network error submitting RSVP.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const [openFaq, setOpenFaq] = useState(null);
 
   /* Bank */
@@ -724,8 +638,8 @@ export default function WeddingInvite() {
       ],
       label: "First Photo",
       duo: [
-        { name: "Franca", image: "/images/story/franca.jpeg" },
-        { name: "Abanum", image: "/images/story/abanum.jpeg" },
+        { name: "Franca", image: "/images/story/how_we_met_2.jpeg" },
+        { name: "Abanum", image: "/images/story/how_we_met_1.jpeg" },
       ],
     },
     {
@@ -737,7 +651,13 @@ export default function WeddingInvite() {
         "Together, we are building a love story rooted in purpose, possibility, and shared success.",
       ],
       label: "Together",
-      image: "/images/story/growing-together.jpeg",
+      photos: [
+        {
+          label: "Growing Together",
+          image: "/images/story/growing_together_2.jpeg",
+        },
+        { label: "Together", image: "/images/story/growing_together_1.jpeg" },
+      ],
     },
     {
       title: "A Beginning Called Forever",
@@ -748,34 +668,40 @@ export default function WeddingInvite() {
         "Today, tomorrow, and always, it will be us.",
       ],
       label: "Forever",
-      image: "/images/story/forever.png",
+      image: "/images/story/a_beginning_called_forever.jpeg",
+      pos: "object-[50%_60%]",
     },
   ];
 
   const memories = [
-    { label: "", image: "/images/gallery/pic1.jpg" },
-    { label: "", image: "/images/gallery/pic2.jpg" },
-    { label: "", image: "/images/gallery/pic3.jpg" },
-    { label: "", image: "/images/gallery/pic4.jpg" },
-    { label: "", image: "/images/gallery/pic5.jpg" },
+    { label: "", image: "/images/gallery/gallery_1.jpeg" },
+    { label: "", image: "/images/gallery/gallery_2.jpeg" },
+    { label: "", image: "/images/gallery/gallery_3.jpeg" },
+    { label: "", image: "/images/gallery/gallery_4.jpeg" },
+    { label: "", image: "/images/gallery/gallery_5.jpeg" },
+    { label: "", image: "/images/gallery/gallery_6.jpeg" },
   ];
 
   const faqs = [
     {
-      q: "Can I bring a plus one?",
-      a: "We would love to have YOU at our celebration. We are keeping it intimate, so we kindly ask that you do not bring a guest who has not been formally invited. Thank you for understanding. ❤️",
+      q: "Who can attend the wedding talk at the Kingdom Hall?",
+      a: "Everyone is welcome to attend the wedding talk at the Kingdom Hall.",
     },
     {
-      q: "Are children allowed?",
-      a: "As much as we adore your little ones, our celebration will be an adults-only affair. Thank you so much for understanding. ❤️",
+      q: "Will there be a reception after the wedding talk?",
+      a: "Yes, there will be a small get-together afterwards for close friends and family, strictly by invitation.",
     },
     {
-      q: "What is the dress code?",
-      a: "Come dressed to celebrate! Our colours are gold, olive green, lilac and white. We can't wait to see you bring them to life.",
+      q: "Can I attend the reception without an invitation?",
+      a: "The reception is by invitation only. We kindly ask everyone to respect this arrangement.",
     },
     {
-      q: "Is parking available at the venue?",
-      a: "Please check with the venue notes shared on your invitation. We encourage carpooling where you can.",
+      q: "How can I get an invitation to the reception?",
+      a: "If you would like to attend the reception, kindly reach out to us to enquire about an invitation. Please note that attendance is limited.",
+    },
+    {
+      q: "Does attending the Kingdom Hall wedding talk mean I am invited to the reception?",
+      a: "No. The wedding talk and the reception are separate arrangements. Everyone is welcome at the Kingdom Hall, while the reception is reserved for invited guests.",
     },
   ];
 
@@ -783,15 +709,12 @@ export default function WeddingInvite() {
     { name: "Gold", hex: "#c9a24b" },
     { name: "Olive Green", hex: "#6f7d3a" },
     { name: "Lilac", hex: "#b79fd9" },
+    { name: "Burgundy", hex: "#800020" },
     { name: "White", hex: "#ffffff" },
   ];
 
   const quoteWords = QUOTE_TEXT.split(" ");
 
-  const inputCls =
-    "w-full bg-wedding-ivory border border-wedding-gold/40 rounded-xl px-4 py-3 text-wedding-ink focus:outline-none focus:border-wedding-lilacDeep transition text-sm";
-  const btnCls =
-    "w-full bg-wedding-lilacDeep hover:bg-wedding-lilac text-white py-3.5 rounded-xl font-medium transition flex items-center justify-center gap-2 shadow-glass disabled:opacity-50";
   const fade = {
     initial: { opacity: 0, y: 30 },
     whileInView: { opacity: 1, y: 0 },
@@ -865,7 +788,6 @@ export default function WeddingInvite() {
         </button>
       </div>
 
-      <FloatingRSVP />
       <FloatingGift />
 
       {/* HERO */}
@@ -900,12 +822,6 @@ export default function WeddingInvite() {
 
           <Countdown target={weddingDate} />
 
-          <a
-            href="#rsvp"
-            className="inline-flex items-center gap-2 bg-wedding-lilacDeep hover:bg-wedding-lilac text-white px-10 py-3.5 rounded-full font-medium transition shadow-glass border border-wedding-gold/60"
-          >
-            <Heart className="w-4 h-4 fill-current" /> RSVP now
-          </a>
           <a
             href="#story"
             className="mt-8 flex flex-col items-center text-wedding-lilacDeep text-sm"
@@ -962,6 +878,8 @@ export default function WeddingInvite() {
                   <div className={reverse ? "md:order-1" : ""}>
                     {c.duo ? (
                       <MeetingDuo people={c.duo} />
+                    ) : c.photos ? (
+                      <PhotoStack photos={c.photos} />
                     ) : (
                       <div className="rounded-4xl p-2 bg-white gold-border relative shadow-glass">
                         <div className="relative w-full aspect-4/5 rounded-3xl overflow-hidden">
@@ -969,6 +887,7 @@ export default function WeddingInvite() {
                             src={c.image}
                             alt={c.label}
                             label={c.label}
+                            className={c.pos || ""}
                             sizes="(max-width: 768px) 100vw, 450px"
                           />
                         </div>
@@ -1358,7 +1277,7 @@ export default function WeddingInvite() {
         <div className="max-w-3xl mx-auto">
           <motion.div {...fade} className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl mb-3 text-wedding-lilacDeep">
-              Frequently asked questions
+              Frequently Asked Questions (FAQs)
             </h2>
             <p className="text-wedding-inkSoft">
               Got questions? We have answers.
@@ -1372,11 +1291,11 @@ export default function WeddingInvite() {
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full text-left px-6 py-4 font-medium text-wedding-ink flex justify-between items-center hover:bg-white transition font-display"
+                  className="w-full text-left px-6 py-4 font-medium text-wedding-ink flex justify-between items-center gap-4 hover:bg-white transition font-display"
                 >
                   <span>{f.q}</span>
                   <ChevronDown
-                    className={`w-5 h-5 text-wedding-lilacDeep transition-transform ${openFaq === i ? "rotate-180" : ""}`}
+                    className={`w-5 h-5 shrink-0 text-wedding-lilacDeep transition-transform ${openFaq === i ? "rotate-180" : ""}`}
                   />
                 </button>
                 <AnimatePresence>
@@ -1394,232 +1313,28 @@ export default function WeddingInvite() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* RSVP */}
-      <section
-        id="rsvp"
-        className="relative py-24 bg-wedding-lilac/30 px-6 overflow-hidden"
-      >
-        <BloomDrift count={4} />
-        <motion.div
-          {...fade}
-          className="glass-sheen relative z-10 max-w-xl mx-auto bg-white/95 p-8 md:p-12 rounded-3xl gold-border shadow-glass"
-        >
-          <div className="text-center mb-8">
-            <Blossom className="w-10 h-10 mx-auto mb-2" />
-            <h2 className="text-3xl md:text-4xl text-wedding-ink mb-2">
-              Be our guest
-            </h2>
-            {step !== "success_sent" && step !== "already_submitted" && (
-              <p className="text-sm text-wedding-lilacDeep">
-                Please RSVP by {RSVP_BY}
-              </p>
-            )}
-          </div>
-
-          {step === "verify_phone" && (
-            <form onSubmit={handleVerifyPhone} className="space-y-5">
-              <div className="bg-wedding-mist border border-wedding-lilac/40 p-4 rounded-2xl text-center">
-                <Lock className="w-5 h-5 text-wedding-lilacDeep mx-auto mb-2" />
-                <p className="text-xs text-wedding-inkSoft">
-                  Enter your phone number to open your RSVP.
-                </p>
-              </div>
-              <div>
-                <label className="block text-xs text-wedding-inkSoft mb-2 font-medium">
-                  Your phone number
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={inputPhone}
-                  onChange={(e) => setInputPhone(e.target.value)}
-                  className={inputCls}
-                  placeholder="e.g. 08012345678"
-                />
-              </div>
-              <button type="submit" disabled={submitting} className={btnCls}>
-                {submitting ? "Verifying..." : "Access invitation"}
-              </button>
-              {errorMessage && (
-                <div className="flex items-center gap-2 text-rose-600 bg-rose-500/10 p-3 rounded-xl text-sm justify-center">
-                  <AlertCircle className="w-5 h-5" /> {errorMessage}
-                </div>
-              )}
-            </form>
-          )}
-
-          {step === "form" && guestRecord && (
-            <form onSubmit={handleFinalRsvpSubmit} className="space-y-5">
-              <div className="bg-wedding-mist p-4 rounded-2xl border border-wedding-lilac/40 text-center">
-                <span className="text-sm text-wedding-lilacDeep block font-display italic mb-1">
-                  Welcome,
-                </span>
-                <h3 className="font-display text-xl text-wedding-ink">
-                  {guestRecord.name}
-                </h3>
-                <p className="text-xs text-wedding-inkSoft mt-1">
-                  Your invitation covers up to {guestRecord.maxFamilySize}{" "}
-                  guest(s) in total
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs text-wedding-inkSoft mb-2 font-medium">
-                  Will you attend?
-                </label>
-                <select
-                  value={formData.attendance}
-                  onChange={(e) => handleAttendanceChange(e.target.value)}
-                  className={inputCls}
+          {/* Enquiry contacts */}
+          <motion.div
+            {...fade}
+            className="mt-10 bg-white/80 gold-border relative rounded-2xl shadow-glassSoft px-6 py-6 text-center"
+          >
+            <p className="text-sm text-wedding-inkSoft mb-4">
+              For any enquiries, please call or message:
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              {CONTACTS.map((num) => (
+                <a
+                  key={num}
+                  href={`tel:${num}`}
+                  className="inline-flex items-center justify-center gap-2 bg-wedding-lilacDeep hover:bg-wedding-lilac text-white px-6 py-3 rounded-xl text-sm font-medium transition"
                 >
-                  <option value="Attending">Joyfully accept</option>
-                  <option value="Declined">Regretfully decline</option>
-                </select>
-              </div>
-
-              {/* Relationship: attending guests only */}
-              {formData.attendance === "Attending" && (
-                <div>
-                  <label className="block text-xs text-wedding-inkSoft mb-2 font-medium">
-                    How do you know the couple?
-                  </label>
-                  <select
-                    required
-                    value={formData.relationship}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        relationship: e.target.value,
-                      })
-                    }
-                    className={inputCls}
-                  >
-                    <option value="" disabled>
-                      Select one
-                    </option>
-                    {RELATIONSHIPS.map((r) => (
-                      <option key={r.value} value={r.value}>
-                        {r.label}
-                      </option>
-                    ))}
-                  </select>
-                  {formData.relationship === "Other" && (
-                    <input
-                      type="text"
-                      maxLength={60}
-                      value={formData.relationshipOther}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          relationshipOther: e.target.value,
-                        })
-                      }
-                      className={`${inputCls} mt-3`}
-                      placeholder="Tell us how you know us"
-                    />
-                  )}
-                </div>
-              )}
-
-              {formData.attendance === "Attending" &&
-                guestRecord.maxFamilySize > 1 && (
-                  <div className="space-y-4 pt-2 border-t border-wedding-gold/30">
-                    <div>
-                      <label className="block text-xs text-wedding-inkSoft mb-2 font-medium">
-                        Additional guests (max {maxAllowed})
-                      </label>
-                      <select
-                        value={formData.additionalGuests.length}
-                        onChange={(e) =>
-                          handleAdditionalGuestCountChange(
-                            parseInt(e.target.value),
-                          )
-                        }
-                        className={inputCls}
-                      >
-                        {Array.from(
-                          { length: guestRecord.maxFamilySize },
-                          (_, i) => i,
-                        ).map((num) => (
-                          <option key={num} value={num}>
-                            {num === 0
-                              ? "Just myself"
-                              : `${num} additional guest(s)`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {formData.additionalGuests.length > 0 && (
-                      <div className="space-y-3">
-                        <label className="block text-xs text-wedding-inkSoft font-medium">
-                          Additional guest name(s)
-                        </label>
-                        {formData.additionalGuests.map((g, idx) => (
-                          <input
-                            key={idx}
-                            type="text"
-                            required
-                            value={g}
-                            onChange={(e) =>
-                              handleAdditionalNameChange(idx, e.target.value)
-                            }
-                            className={inputCls}
-                            placeholder={`Full name of guest ${idx + 1}`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-              <div>
-                <label className="block text-xs text-wedding-inkSoft mb-2 font-medium">
-                  Wishes for the couple
-                </label>
-                <textarea
-                  rows="3"
-                  value={formData.message}
-                  onChange={(e) =>
-                    setFormData({ ...formData, message: e.target.value })
-                  }
-                  className={`${inputCls} resize-none`}
-                  placeholder="Leave a sweet note..."
-                />
-              </div>
-
-              <button type="submit" disabled={submitting} className={btnCls}>
-                {submitting ? "Sending..." : "Send RSVP"}
-              </button>
-              {errorMessage && (
-                <div className="flex items-center gap-2 text-rose-600 bg-rose-500/10 p-3 rounded-xl text-sm justify-center">
-                  <AlertCircle className="w-5 h-5" /> {errorMessage}
-                </div>
-              )}
-            </form>
-          )}
-
-          {(step === "success_sent" || step === "already_submitted") && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6 }}
-              className="text-center py-8 space-y-4"
-            >
-              <Blossom className="w-14 h-14 mx-auto" />
-              <h3 className="font-display text-2xl md:text-3xl text-wedding-ink">
-                {step === "success_sent" ? "With gratitude" : "See you soon"}
-              </h3>
-              <p className="text-sm text-wedding-inkSoft leading-relaxed max-w-sm mx-auto">
-                {step === "success_sent"
-                  ? "Your RSVP has been received. We look forward to sharing our special day with you on December 12, 2026."
-                  : "We have already received your RSVP for this invitation. Warmest regards from Franca & Abanum!"}
-              </p>
-            </motion.div>
-          )}
-        </motion.div>
+                  <Phone className="w-4 h-4" /> {num}
+                </a>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       {/* FOOTER */}
