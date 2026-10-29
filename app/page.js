@@ -697,7 +697,7 @@ export default function WeddingInvite() {
     },
     {
       q: "How can I get an invitation to the reception?",
-      a: "If you would like to attend the reception, kindly reach out to us to enquire about an invitation. Please note that attendance is limited.",
+      a: "If you would like to attend the reception kindly leave us a message for the invitation code.",
     },
     {
       q: "Does attending the Kingdom Hall wedding talk mean I am invited to the reception?",
@@ -1252,18 +1252,18 @@ export default function WeddingInvite() {
           <p className="text-wedding-inkSoft mb-12">
             We would love to see our guests dressed in our wedding palette.
           </p>
-          <div className="flex flex-wrap justify-center gap-5 md:gap-8">
+          <div className="flex flex-nowrap justify-center gap-[2vw] sm:gap-5 md:gap-8">
             {colors.map((c) => (
               <motion.div
                 key={c.hex}
                 whileHover={{ scale: 1.08 }}
-                className="flex flex-col items-center"
+                className="flex flex-col items-center w-[15vw] max-w-24"
               >
                 <div
-                  className="w-16 h-16 md:w-20 md:h-20 rounded-full shadow-glassSoft gold-border relative mb-2"
+                  className="w-full max-w-20 aspect-square rounded-full shadow-glassSoft gold-border relative mb-2"
                   style={{ backgroundColor: c.hex }}
                 />
-                <span className="text-xs text-wedding-inkSoft font-medium">
+                <span className="text-[2.8vw] sm:text-xs text-center leading-tight text-wedding-inkSoft font-medium">
                   {c.name}
                 </span>
               </motion.div>
