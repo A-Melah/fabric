@@ -39,7 +39,7 @@ const QUOTE_NOTE =
 const QUOTE_BY = "Franca & Abanum";
 
 // Enquiry contacts shown under the FAQs
-const CONTACTS = ["08101036298", "07084236245"];
+const CONTACTS = ["08101036298", "07063533185"];
 
 const BANK = {
   NGN: [
